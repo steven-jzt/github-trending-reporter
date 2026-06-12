@@ -58,15 +58,29 @@ python main.py weekly    # 每周报告
 
 运行 `register_tasks.py`，自动创建每天早上 9:00 的定时任务。
 
-需要电脑开机且 GitHub 加速器处于开启状态。
+```bash
+python register_tasks.py
+```
 
-### GitHub Actions
+**前提条件：电脑开机 + GitHub 加速器开启。** 关机则不会执行。适合日常使用电脑的用户。
 
-推送到 GitHub 后自动运行，配置文件 `.github/workflows/report.yml`。
+### GitHub Actions（云端兜底）
+
+推送到 GitHub 后自动运行。**不依赖电脑状态**，服务器 24 小时执行。
+
+但 GitHub Actions 服务器在海外，DeepSeek 等国内 API 无法直连，AI 摘要会降级为纯项目列表格式。如需恢复 AI 摘要，可部署 `proxy.py` 作为 API 中转（见下方说明）。
 
 需在仓库 Settings → Secrets 中配置 API key 和推送通道信息。
 
-注意：GitHub Actions 服务器在海外，部分国内 API（如 DeepSeek）可能无法直连。可部署 `proxy.py` 作为中转，或使用 OpenAI / Claude 等海外 API。
+### AI 摘要可用性
+
+| 运行方式 | DeepSeek (国内) | OpenAI / Claude (海外) |
+|---------|:--:|:--:|
+| 本地 / Windows 定时任务 | AI 摘要 + 列表 | AI 摘要 + 列表 |
+| GitHub Actions | 仅列表 | AI 摘要 + 列表 |
+| GitHub Actions + proxy.py 部署 | AI 摘要 + 列表 | — |
+
+> `proxy.py` 可作为 DeepSeek API 中转服务器部署到云函数，使 GitHub Actions 也能使用 AI 摘要。目前已写好，待部署。
 
 ## 项目结构
 
