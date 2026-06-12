@@ -24,19 +24,25 @@ def run(period: str) -> Report:
 
     report = Report(period=period, repos=repos)
 
-    # 摘要
+    # 项目列表（始终生成）
+    list_section = _list_report(repos, period)
+
+    # AI 摘要
     summarizer = get_summarizer()
     if summarizer:
         print(f"[*] 使用 {type(summarizer).__name__} 生成 AI 摘要 ...")
         try:
-            report.content = summarizer.summarize(repos, period)
+            ai_summary = summarizer.summarize(repos, period)
+            report.content = ai_summary + "\n\n---\n\n## 本期全部项目列表\n\n" + list_section
         except Exception:
-            print(f"    AI 摘要失败，使用纯列表格式")
+            print(f"    AI 摘要失败，仅使用项目列表")
             traceback.print_exc()
-            report.content = _fallback_report(repos, period)
+            label = "今日" if period == "daily" else "本周"
+            report.content = f"# GitHub Trending {label}报告\n\n" + list_section
     else:
-        print("[*] 未配置 AI API key，使用纯列表格式")
-        report.content = _fallback_report(repos, period)
+        print("[*] 未配置 AI API key，仅使用项目列表")
+        label = "今日" if period == "daily" else "本周"
+        report.content = f"# GitHub Trending {label}报告\n\n" + list_section
 
     # 保存到本地
     filepath = report.save()
@@ -57,9 +63,8 @@ def run(period: str) -> Report:
     return report
 
 
-def _fallback_report(repos, period: str) -> str:
-    label = "今日" if period == "daily" else "本周"
-    lines = [f"# GitHub Trending {label}报告\n"]
+def _list_report(repos, period: str) -> str:
+    lines: list[str] = []
     for i, r in enumerate(repos, 1):
         lines.append(
             f"{i}. **[{r.full_name}]({r.url})** ⭐{r.total_stars} (+{r.stars_period})"
