@@ -80,7 +80,36 @@ python register_tasks.py
 | GitHub Actions | 仅列表 | AI 摘要 + 列表 |
 | GitHub Actions + proxy.py 部署 | AI 摘要 + 列表 | — |
 
-> `proxy.py` 可作为 DeepSeek API 中转服务器部署到云函数，使 GitHub Actions 也能使用 AI 摘要。目前已写好，待部署。
+### 如何让 GitHub Actions 也有 AI 摘要
+
+GitHub Actions 服务器在海外，访问国内 API（DeepSeek 等）会 DNS 失败。两种解决方式：
+
+**方式 A：换海外 API（推荐，零部署）**
+
+注册 [OpenAI](https://platform.openai.com) 或 [Anthropic](https://console.anthropic.com) 获取 API key：
+
+```env
+# OpenAI
+OPENAI_API_KEY=sk-xxx
+OPENAI_BASE_URL=https://api.openai.com/v1
+AI_MODEL=gpt-4o
+
+# 或 Claude
+ANTHROPIC_API_KEY=sk-ant-xxx
+AI_MODEL=claude-sonnet-4-6
+```
+
+本地和 Actions 可以各用各的：本地 `.env` 用 DeepSeek，GitHub Secrets 用 OpenAI，互不影响。
+
+**方式 B：部署 API 中转（继续用 DeepSeek，需云服务）**
+
+注册 [阿里云函数计算 FC](https://fc.console.aliyun.com)（免费额度 100 万次/月），将 `proxy.py` 部署上去，获取公网 URL：
+
+```env
+OPENAI_BASE_URL=https://xxx.cn-hangzhou.fc.aliyuncs.com
+```
+
+> `proxy.py` 代码已写好，支持直接运行和 WSGI 云函数两种模式，无需修改代码即可部署。
 
 ## 项目结构
 
