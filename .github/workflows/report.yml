@@ -1,0 +1,63 @@
+name: GitHub Trending Report
+
+on:
+  schedule:
+    # 每日报告：北京时间 9:00 (UTC+8 → UTC 1:00)
+    - cron: "0 1 * * *"
+    # 每周报告：北京时间周一 9:00
+    - cron: "0 1 * * 1"
+  workflow_dispatch:
+    inputs:
+      period:
+        description: "报告周期"
+        required: true
+        type: choice
+        options:
+          - daily
+          - weekly
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Determine period
+        id: period
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "period=${{ inputs.period }}" >> $GITHUB_OUTPUT
+          elif [ "$(date +%u)" = "1" ]; then
+            echo "period=weekly" >> $GITHUB_OUTPUT
+          else
+            echo "period=daily" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run report
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          AI_MODEL: ${{ secrets.AI_MODEL }}
+          EMAIL_SMTP_HOST: ${{ secrets.EMAIL_SMTP_HOST }}
+          EMAIL_SMTP_PORT: ${{ secrets.EMAIL_SMTP_PORT }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          SCT_KEY: ${{ secrets.SCT_KEY }}
+          QMSG_KEY: ${{ secrets.QMSG_KEY }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+        run: python main.py ${{ steps.period.outputs.period }}
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-${{ steps.period.outputs.period }}
+          path: reports/
