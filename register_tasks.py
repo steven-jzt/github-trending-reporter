@@ -1,20 +1,18 @@
-import subprocess, sys
+import subprocess, sys, os
 
-DIR = r"C:\Users\steve\Desktop\抓取提交"
+DIR = os.path.dirname(os.path.abspath(__file__))
+PY = sys.executable  # 使用完整 Python 路径，避免定时任务找不到
 
 tasks = [
-    ("GitHubTrendingDaily",  "DAILY",         "daily"),
-    ("GitHubTrendingWeekly", "WEEKLY", "MON",  "weekly"),
+    ("GitHubTrendingDaily",  "DAILY",         None, "daily"),
+    ("GitHubTrendingWeekly", "WEEKLY",        "MON", "weekly"),
 ]
 
-for name, *rest in tasks:
-    if len(rest) == 2:
-        sc, arg = rest
-        cmd = f'SCHTASKS /Create /TN "{name}" /TR "python {DIR}\\main.py {arg}" /SC {sc} /ST 09:00 /F'
-    else:
-        sc, day, arg = rest
-        cmd = f'SCHTASKS /Create /TN "{name}" /TR "python {DIR}\\main.py {arg}" /SC {sc} /D {day} /ST 09:00 /F'
-    print(f"[*] {cmd}")
+for name, sc, day, arg in tasks:
+    tr = f'"{PY}" "{DIR}\\main.py" {arg}'
+    sc_day = f"/D {day}" if day else ""
+    cmd = f'SCHTASKS /Create /TN "{name}" /TR {tr} /SC {sc} {sc_day} /ST 09:00 /F'
+    print(f"[*] {name}")
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.returncode == 0:
         print(f"    OK")
