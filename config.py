@@ -39,7 +39,7 @@ def get_notifiers():
             smtp_port=int(os.getenv("EMAIL_SMTP_PORT", "587").strip()),
             user=email_user,
             password=os.getenv("EMAIL_PASS", "").strip(),
-            to=os.getenv("EMAIL_TO", "").strip(),
+            to=[a.strip() for a in os.getenv("EMAIL_TO", "").split(",") if a.strip()],
         ))
 
     # 微信 Server酱
