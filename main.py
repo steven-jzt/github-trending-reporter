@@ -37,11 +37,13 @@ def run(period: str) -> Report:
         except Exception:
             print(f"    AI 摘要失败，仅使用项目列表")
             traceback.print_exc()
-            label = "今日" if period == "daily" else "本周"
+            labels = {"daily": "今日", "weekly": "本周", "monthly": "本月"}
+            label = labels.get(period, "本周")
             report.content = f"# GitHub Trending {label}报告\n\n" + list_section
     else:
         print("[*] 未配置 AI API key，仅使用项目列表")
-        label = "今日" if period == "daily" else "本周"
+        labels = {"daily": "今日", "weekly": "本周", "monthly": "本月"}
+        label = labels.get(period, "本周")
         report.content = f"# GitHub Trending {label}报告\n\n" + list_section
 
     # 保存到本地
@@ -76,10 +78,11 @@ def _list_report(repos, period: str) -> str:
 
 def main():
     _fix_windows_encoding()
-    if len(sys.argv) < 2 or sys.argv[1] not in ("daily", "weekly"):
-        print("用法: python main.py [daily|weekly]")
-        print("  daily  - 生成每日 GitHub Trending 报告")
-        print("  weekly - 生成每周 GitHub Trending 报告")
+    if len(sys.argv) < 2 or sys.argv[1] not in ("daily", "weekly", "monthly"):
+        print("用法: python main.py [daily|weekly|monthly]")
+        print("  daily   - 每日 GitHub Trending 报告")
+        print("  weekly  - 每周 GitHub Trending 报告")
+        print("  monthly - 月度 GitHub Trending 报告")
         sys.exit(1)
 
     period = sys.argv[1]

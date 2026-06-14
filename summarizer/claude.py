@@ -14,7 +14,8 @@ class ClaudeSummarizer(BaseSummarizer):
         self.model = model
 
     def summarize(self, repos: list[Repo], period: str) -> str:
-        label = "今日" if period == "daily" else "本周"
+        labels = {"daily": "今日", "weekly": "本周", "monthly": "本月"}
+        label = labels.get(period, "本周")
         repo_text = format_repos_text(repos)
 
         user_msg = f"以下是 GitHub Trending {label}的仓库列表（共 {len(repos)} 个）：\n\n{repo_text}\n\n请据此生成{label}GitHub Trending 技术报告。"

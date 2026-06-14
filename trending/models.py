@@ -27,7 +27,8 @@ class Report:
 
     @property
     def title(self) -> str:
-        label = "每日" if self.period == "daily" else "每周"
+        labels = {"daily": "每日", "weekly": "每周", "monthly": "月度"}
+        label = labels.get(self.period, "每周")
         return f"GitHub Trending {label}报告 ({self.date})"
 
     def save(self, base_dir: str = "reports") -> Path:

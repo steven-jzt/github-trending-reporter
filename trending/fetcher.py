@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 from .models import Repo
 
-Period = Literal["daily", "weekly"]
+Period = Literal["daily", "weekly", "monthly"]
 
 TRENDING_URL = "https://github.com/trending"
 HEADERS = {
@@ -43,8 +43,10 @@ def _fetch_html(url: str) -> str:
 
 
 def fetch_trending(period: Period = "daily", count: int = 25) -> list[Repo]:
-    """抓取 GitHub Trending 仓库列表。period: daily | weekly"""
-    url = f"{TRENDING_URL}?since={period}"
+    """抓取 GitHub Trending 仓库列表。period: daily | weekly | monthly
+    monthly 使用 weekly 数据（GitHub 无月度页面）"""
+    since = "weekly" if period == "monthly" else period
+    url = f"{TRENDING_URL}?since={since}"
 
     try:
         html = _fetch_html(url)
