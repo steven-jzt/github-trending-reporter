@@ -1,10 +1,10 @@
 # GitHub Trending Reporter
 
-每日/每周自动抓取 GitHub Trending，通过 AI 生成深度趋势分析报告，推送到邮件/微信/QQ 等渠道。
+每日/每周/月度自动抓取 GitHub Trending，通过 AI 生成深度趋势分析报告，推送到邮件/微信/QQ 等渠道。
 
 ## 功能
 
-- 抓取 GitHub Trending（每日 / 每周）
+- 抓取 GitHub Trending（每日 / 每周 / 月度）
 - AI 深度分析：趋势总览、方向解读、新星挖掘、生态变化
 - 同时附带完整项目列表（AI 摘要 + 原始列表双输出）
 - 多渠道推送：邮件（QQ 邮箱）、微信（Server 酱）、QQ（Qmsg 酱）、通用 Webhook
@@ -41,6 +41,7 @@ EMAIL_TO=receive@example.com
 ```bash
 python main.py daily     # 每日报告
 python main.py weekly    # 每周报告
+python main.py monthly   # 月度报告
 ```
 
 ## 推送通道
@@ -56,13 +57,25 @@ python main.py weekly    # 每周报告
 
 ### Windows 定时任务（推荐国内用户）
 
-运行 `register_tasks.py`，自动创建每天早上 9:00 的定时任务。
+**方式 A：双击 `schedule.bat`**（最简单）
+
+直接双击项目目录下的 `schedule.bat`，自动创建三个定时任务：
+
+| 任务名 | 频率 | 时间 |
+|--------|------|------|
+| `GitHubTrendingDaily` | 每天 | 09:00 |
+| `GitHubTrendingWeekly` | 每周一 | 09:00 |
+| `GitHubTrendingMonthly` | 每月 1 号 | 09:00 |
+
+**方式 B：命令行**
 
 ```bash
-python register_tasks.py
+python register_tasks.py   # 同上，创建全部三个定时任务
 ```
 
-**前提条件：电脑开机 + GitHub 加速器开启。** 关机则不会执行。适合日常使用电脑的用户。
+可通过 `taskschd.msc`（任务计划程序）查看或删除任务。
+
+**前提条件：电脑开机 + GitHub 可访问。** 关机则不会执行。适合日常使用电脑的用户。
 
 ### GitHub Actions（云端兜底）
 
@@ -116,6 +129,11 @@ OPENAI_BASE_URL=https://xxx.cn-hangzhou.fc.aliyuncs.com
 ```
 ├── main.py              # 主程序入口
 ├── config.py            # 配置读取
+├── register_tasks.py    # Windows 定时任务注册
+├── schedule.bat         # 一键注册定时任务（双击即可）
+├── run_daily.bat        # 每日任务脚本
+├── run_weekly.bat       # 每周任务脚本
+├── run_monthly.bat      # 月度任务脚本
 ├── trending/            # GitHub Trending 抓取
 │   ├── fetcher.py       # 网页爬虫
 │   └── models.py        # 数据模型

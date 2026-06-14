@@ -1,15 +1,15 @@
-import subprocess, sys, os
+import subprocess, os
 
 DIR = os.path.dirname(os.path.abspath(__file__))
-PY = sys.executable  # 使用完整 Python 路径，避免定时任务找不到
 
 tasks = [
-    ("GitHubTrendingDaily",  "DAILY",         None, "daily"),
-    ("GitHubTrendingWeekly", "WEEKLY",        "MON", "weekly"),
+    ("GitHubTrendingDaily",   "DAILY",   None, "run_daily.bat"),
+    ("GitHubTrendingWeekly",  "WEEKLY",  "MON", "run_weekly.bat"),
+    ("GitHubTrendingMonthly", "MONTHLY", "1",   "run_monthly.bat"),
 ]
 
-for name, sc, day, arg in tasks:
-    tr = f'"{PY}" "{DIR}\\main.py" {arg}'
+for name, sc, day, bat in tasks:
+    tr = f'"{os.path.join(DIR, bat)}"'
     sc_day = f"/D {day}" if day else ""
     cmd = f'SCHTASKS /Create /TN "{name}" /TR {tr} /SC {sc} {sc_day} /ST 09:00 /F'
     print(f"[*] {name}")

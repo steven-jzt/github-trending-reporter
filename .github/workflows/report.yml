@@ -6,6 +6,8 @@ on:
     - cron: "0 1 * * *"
     # 每周报告：北京时间周一 9:00
     - cron: "0 1 * * 1"
+    # 月度报告：北京时间每月1号 9:00
+    - cron: "0 1 1 * *"
   workflow_dispatch:
     inputs:
       period:
@@ -15,6 +17,7 @@ on:
         options:
           - daily
           - weekly
+          - monthly
 
 jobs:
   report:
@@ -34,6 +37,8 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "period=${{ inputs.period }}" >> $GITHUB_OUTPUT
+          elif [ "$(date +%d)" = "01" ]; then
+            echo "period=monthly" >> $GITHUB_OUTPUT
           elif [ "$(date +%u)" = "1" ]; then
             echo "period=weekly" >> $GITHUB_OUTPUT
           else
