@@ -5,6 +5,7 @@ from email.mime.text import MIMEText
 import markdown
 
 from .base import BaseNotifier
+from log import get_logger
 
 MD = markdown.Markdown(extensions=["tables", "fenced_code"])
 
@@ -45,5 +46,6 @@ class EmailNotifier(BaseNotifier):
                 server.sendmail(self.user, self.to, msg.as_string())
             return True
         except Exception as e:
-            print(f"[EmailNotifier] 发送失败: {e}")
+            log = get_logger("email")
+            log.error(f"发送失败: {e}")
             return False

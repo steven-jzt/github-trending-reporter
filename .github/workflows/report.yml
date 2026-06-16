@@ -32,6 +32,26 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Pre-flight check
+        id: preflight
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
+          AI_MODEL: ${{ secrets.AI_MODEL }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_SMTP_HOST: smtp.qq.com
+          EMAIL_SMTP_PORT: "587"
+          SCT_KEY: ${{ secrets.SCT_KEY }}
+          QMSG_KEY: ${{ secrets.QMSG_KEY }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+        run: |
+          python validate.py
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+
       - name: Determine period
         id: period
         run: |
@@ -50,6 +70,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
           AI_MODEL: ${{ secrets.AI_MODEL }}
           EMAIL_SMTP_HOST: smtp.qq.com
           EMAIL_SMTP_PORT: "587"
@@ -66,3 +87,10 @@ jobs:
         with:
           name: report-${{ steps.period.outputs.period }}
           path: reports/
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: logs-${{ steps.period.outputs.period }}
+          path: logs/
