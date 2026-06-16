@@ -2,6 +2,27 @@
 
 每日/每周/月度自动抓取 GitHub Trending，通过 AI 生成深度趋势分析报告，推送到邮件/微信/QQ 等渠道。
 
+## 一键部署
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/steven-jzt/github-trending-reporter.git
+cd github-trending-reporter
+
+# 2. 安装依赖
+pip install -r requirements.txt
+
+# 3. 运行配置向导（交互式，2 分钟搞定）
+python setup.py
+
+# 4. 立即测试
+python main.py daily
+```
+
+向导会依次引导你配置 AI API、邮件推送、定时方式（Windows 定时任务 / GitHub Actions / 两者）。配置完成后即刻可用。
+
+> **给别人用时**：让他 fork 本项目 → clone → `python setup.py` → 完成。不需要手动编辑 `.env`。
+
 ## 功能
 
 - 抓取 GitHub Trending（每日 / 每周 / 月度）
@@ -144,6 +165,7 @@ OPENAI_BASE_URL=https://xxx.cn-hangzhou.fc.aliyuncs.com
 
 ```
 ├── main.py              # 主程序入口
+├── setup.py             # 交互式一键部署向导
 ├── config.py            # 配置读取
 ├── validate.py          # 启动前配置预检 + 连通性测试
 ├── log.py               # 结构化日志（控制台 + 文件）
