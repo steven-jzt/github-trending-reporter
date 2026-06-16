@@ -33,7 +33,7 @@ AI_MODEL=deepseek-chat
 # 推送通道（选填）
 EMAIL_USER=your@qq.com
 EMAIL_PASS=授权码
-EMAIL_TO=receive@example.com
+EMAIL_TO=receive@example.com,another@example.com  # 逗号分隔多个收件人
 ```
 
 ### 3. 运行
@@ -48,7 +48,7 @@ python main.py monthly   # 月度报告
 
 | 通道 | 配置项 | 获取方式 |
 |------|--------|---------|
-| QQ 邮箱 | `EMAIL_USER` `EMAIL_PASS` | QQ 邮箱 → 设置 → 账户 → 开启 SMTP → 获取授权码 |
+| QQ 邮箱 | `EMAIL_USER` `EMAIL_PASS` `EMAIL_TO` | QQ 邮箱 → 设置 → 账户 → 开启 SMTP → 获取授权码。<br>`EMAIL_TO` 支持逗号分隔多个收件人。 |
 | 微信 | `SCT_KEY` | [Server 酱](https://sct.ftqq.com) |
 | QQ | `QMSG_KEY` | [Qmsg 酱](https://qmsg.zendee.cn) |
 | 企业微信 / Discord / Slack | `WEBHOOK_URL` | 对应平台的 Webhook 地址 |
@@ -76,6 +76,14 @@ python register_tasks.py   # 同上，创建全部三个定时任务
 可通过 `taskschd.msc`（任务计划程序）查看或删除任务。
 
 **前提条件：电脑开机 + GitHub 可访问。** 关机则不会执行。适合日常使用电脑的用户。
+
+### 新增收件人补发
+
+在 `.env` 的 `EMAIL_TO` 中添加新地址后，运行补发脚本将当天的报告发送给所有收件人：
+
+```bash
+python resend_today.py
+```
 
 ### GitHub Actions（云端兜底）
 
@@ -134,6 +142,7 @@ OPENAI_BASE_URL=https://xxx.cn-hangzhou.fc.aliyuncs.com
 ├── run_daily.bat        # 每日任务脚本
 ├── run_weekly.bat       # 每周任务脚本
 ├── run_monthly.bat      # 月度任务脚本
+├── resend_today.py      # 补发当天报告给新增收件人
 ├── trending/            # GitHub Trending 抓取
 │   ├── fetcher.py       # 网页爬虫
 │   └── models.py        # 数据模型
