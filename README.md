@@ -9,6 +9,8 @@
 - 同时附带完整项目列表（AI 摘要 + 原始列表双输出）
 - 多渠道推送：邮件（QQ 邮箱）、微信（Server 酱）、QQ（Qmsg 酱）、通用 Webhook
 - 支持 Claude / OpenAI / DeepSeek 等兼容 API
+- 启动前自动预检：API 连通性、SMTP 认证、配置完整性
+- 结构化日志：同时输出控制台和日志文件，定时任务出错可追溯
 - 支持 Windows 定时任务本地运行
 - 支持 GitHub Actions 云端自动运行
 
@@ -38,11 +40,15 @@ EMAIL_TO=receive@example.com,another@example.com  # 逗号分隔多个收件人
 
 ### 3. 运行
 
+启动时会自动执行预检：验证 API 连通性、SMTP 认证、配置完整性。所有问题一次性报告。
+
 ```bash
 python main.py daily     # 每日报告
 python main.py weekly    # 每周报告
 python main.py monthly   # 月度报告
 ```
+
+日志同时输出到控制台和 `logs/` 目录，按日期命名。
 
 ## 推送通道
 
@@ -89,7 +95,9 @@ python resend_today.py
 
 推送到 GitHub 后自动运行。**不依赖电脑状态**，服务器 24 小时执行。
 
-但 GitHub Actions 服务器在海外，DeepSeek 等国内 API 无法直连，AI 摘要会降级为纯项目列表格式。如需恢复 AI 摘要，可部署 `proxy.py` 作为 API 中转（见下方说明）。
+运行前自动预检 API 连通性，失败时会打印明确原因。运行日志作为 Artifact 保留（Actions → 具体 run → Artifacts），方便排查问题。
+
+但 GitHub Actions 服务器在海外，DeepSeek 等国内 API 无法直连，预检会提示 DNS 解析失败，AI 摘要会降级为纯项目列表格式。如需恢复 AI 摘要，有两种方式（见下文）：
 
 需在仓库 Settings → Secrets 中配置 API key 和推送通道信息。
 
@@ -137,6 +145,8 @@ OPENAI_BASE_URL=https://xxx.cn-hangzhou.fc.aliyuncs.com
 ```
 ├── main.py              # 主程序入口
 ├── config.py            # 配置读取
+├── validate.py          # 启动前配置预检 + 连通性测试
+├── log.py               # 结构化日志（控制台 + 文件）
 ├── register_tasks.py    # Windows 定时任务注册
 ├── schedule.bat         # 一键注册定时任务（双击即可）
 ├── run_daily.bat        # 每日任务脚本
