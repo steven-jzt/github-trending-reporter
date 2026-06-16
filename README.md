@@ -4,24 +4,31 @@
 
 ## 一键部署
 
+**方式 A：Use this template（推荐给新手）**
+
+点击仓库首页的绿色 **"Use this template"** 按钮 → Create new repository → 然后：
+
 ```bash
-# 1. 克隆项目
+git clone <你的仓库地址>
+cd github-trending-reporter
+pip install -r requirements.txt
+python setup.py        # 交互式配置向导，2 分钟
+python main.py daily   # 立即测试
+```
+
+**方式 B：直接 clone**
+
+```bash
 git clone https://github.com/steven-jzt/github-trending-reporter.git
 cd github-trending-reporter
-
-# 2. 安装依赖
 pip install -r requirements.txt
-
-# 3. 运行配置向导（交互式，2 分钟搞定）
 python setup.py
-
-# 4. 立即测试
 python main.py daily
 ```
 
-向导会依次引导你配置 AI API、邮件推送、定时方式（Windows 定时任务 / GitHub Actions / 两者）。配置完成后即刻可用。
+向导依次引导配置：AI API → 邮件推送 → 其他推送通道 → 定时方式（Windows 定时任务 / GitHub Actions / 两者）。配置写入 `.env`，不需要手动编辑。
 
-> **给别人用时**：让他 fork 本项目 → clone → `python setup.py` → 完成。不需要手动编辑 `.env`。
+> 如果选了 GitHub Actions，向导会打印 Secrets 清单，去仓库 Settings → Secrets → Actions 填入即可。
 
 ## 功能
 
@@ -35,33 +42,23 @@ python main.py daily
 - 支持 Windows 定时任务本地运行
 - 支持 GitHub Actions 云端自动运行
 
-## 快速开始
+## 手动配置（不用向导）
 
-### 1. 安装依赖
-
-```bash
-pip install -r requirements.txt
-```
-
-### 2. 配置
-
-复制 `.env.example` 为 `.env`，填入你的配置：
+如果你不想用 `python setup.py`，手动复制 `.env.example` 为 `.env`：
 
 ```env
 # AI 摘要（至少选一个）
 OPENAI_API_KEY=sk-xxx
-OPENAI_BASE_URL=https://api.deepseek.com   # DeepSeek 或其他兼容 API
+OPENAI_BASE_URL=https://api.deepseek.com
 AI_MODEL=deepseek-chat
 
-# 推送通道（选填）
+# 邮件推送
 EMAIL_USER=your@qq.com
 EMAIL_PASS=授权码
-EMAIL_TO=receive@example.com,another@example.com  # 逗号分隔多个收件人
+EMAIL_TO=a@qq.com,b@qq.com  # 逗号分隔多个收件人
 ```
 
-### 3. 运行
-
-启动时会自动执行预检：验证 API 连通性、SMTP 认证、配置完整性。所有问题一次性报告。
+启动时自动预检 API 连通性、SMTP 认证、配置完整性，问题一次性报告。
 
 ```bash
 python main.py daily     # 每日报告
@@ -69,7 +66,7 @@ python main.py weekly    # 每周报告
 python main.py monthly   # 月度报告
 ```
 
-日志同时输出到控制台和 `logs/` 目录，按日期命名。
+控制台输出同时写入 `logs/` 目录，按日期保存。
 
 ## 推送通道
 
