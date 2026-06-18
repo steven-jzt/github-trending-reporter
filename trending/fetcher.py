@@ -4,6 +4,7 @@ from typing import Literal
 import httpx
 from bs4 import BeautifulSoup
 
+from retry import with_retry
 from .models import Repo
 
 Period = Literal["daily", "weekly", "monthly"]
@@ -45,12 +46,7 @@ def _fetch_html(url: str) -> str:
 def fetch_trending(period: Period = "daily", count: int = 25) -> list[Repo]:
     """抓取 GitHub Trending 仓库列表。period: daily | weekly | monthly"""
     url = f"{TRENDING_URL}?since={period}"
-
-    try:
-        html = _fetch_html(url)
-    except httpx.HTTPError:
-        # 如果 verify=False 也失败，再试一次不带 header 魔法的
-        html = _fetch_html(url)
+    html = with_retry(lambda: _fetch_html(url), f"抓取 GitHub Trending ({period})")
 
     soup = BeautifulSoup(html, "html.parser")
     repos: list[Repo] = []

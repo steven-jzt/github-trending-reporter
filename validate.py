@@ -4,6 +4,7 @@ import smtplib
 import socket
 from dotenv import load_dotenv
 from log import get_logger
+from retry import with_retry
 
 load_dotenv()
 log = get_logger("validate")
@@ -67,22 +68,22 @@ def check_api_connectivity() -> list[str]:
         base_url = os.getenv("OPENAI_BASE_URL", "").strip()
         if base_url:
             host = base_url.replace("https://", "").replace("http://", "").split("/")[0].split(":")[0]
-            ok, err = _tcp_check(host, 443)
-            if ok:
+            try:
+                with_retry(lambda: _tcp_check_assert(host, 443), f"API 连通性 ({host})", max_retries=2, delay=5)
                 log.ok(f"API 连通: {base_url}")
-            else:
-                msg = f"无法连接 AI API: {base_url} ({err})"
+            except Exception as e:
+                msg = f"无法连接 AI API: {base_url} ({e})"
                 issues.append(msg)
                 log.error(msg)
 
     if anthropic_key:
         base_url = os.getenv("ANTHROPIC_BASE_URL", "api.anthropic.com").strip()
         host = base_url.replace("https://", "").replace("http://", "").split("/")[0].split(":")[0]
-        ok, err = _tcp_check(host, 443)
-        if ok:
+        try:
+            with_retry(lambda: _tcp_check_assert(host, 443), f"API 连通性 ({host})", max_retries=2, delay=5)
             log.ok(f"API 连通: {host}")
-        else:
-            msg = f"无法连接 Anthropic API: {host} ({err})"
+        except Exception as e:
+            msg = f"无法连接 Anthropic API: {host} ({e})"
             issues.append(msg)
             log.error(msg)
 
@@ -99,10 +100,13 @@ def check_smtp_connectivity() -> list[str]:
     host = os.getenv("EMAIL_SMTP_HOST", "smtp.qq.com").strip()
     port = int(os.getenv("EMAIL_SMTP_PORT", "587").strip())
 
-    try:
+    def _smtp_check():
         with smtplib.SMTP(host, port, timeout=10) as server:
             server.starttls()
             server.login(email_user, os.getenv("EMAIL_PASS", "").strip())
+
+    try:
+        with_retry(_smtp_check, f"SMTP 连通性 ({host}:{port})", max_retries=2, delay=5)
         log.ok(f"SMTP 连通: {host}:{port}")
     except smtplib.SMTPAuthenticationError:
         issues.append(f"SMTP 认证失败: {host}:{port} (EMAIL_PASS 授权码是否正确？)")
@@ -124,6 +128,13 @@ def _tcp_check(host: str, port: int, timeout: float = 5.0) -> tuple[bool, str]:
         return False, "DNS 解析失败"
     except Exception as e:
         return False, str(e)
+
+
+def _tcp_check_assert(host: str, port: int, timeout: float = 5.0):
+    """TCP 检查，失败时抛异常（用于 retry 包装）"""
+    ok, err = _tcp_check(host, port, timeout)
+    if not ok:
+        raise ConnectionError(err)
 
 
 def run_preflight() -> bool:

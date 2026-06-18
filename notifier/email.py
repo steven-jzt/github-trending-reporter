@@ -6,6 +6,7 @@ import markdown
 
 from .base import BaseNotifier
 from log import get_logger
+from retry import with_retry
 
 MD = markdown.Markdown(extensions=["tables", "fenced_code"])
 
@@ -39,13 +40,16 @@ class EmailNotifier(BaseNotifier):
         msg["To"] = ", ".join(self.to)
         msg.attach(MIMEText(styled, "html", "utf-8"))
 
-        try:
+        def _do_send():
             with smtplib.SMTP(self.smtp_host, self.smtp_port, timeout=15) as server:
                 server.starttls()
                 server.login(self.user, self.password)
                 server.sendmail(self.user, self.to, msg.as_string())
+
+        try:
+            with_retry(_do_send, "邮件发送", max_retries=3, delay=10)
             return True
         except Exception as e:
             log = get_logger("email")
-            log.error(f"发送失败: {e}")
+            log.error(f"发送失败 (已重试): {e}")
             return False
